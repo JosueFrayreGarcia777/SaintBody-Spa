@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/app/generated/prisma"
@@ -12,44 +7,91 @@ datasource db {
   provider = "postgresql"
 }
 
-
-model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String 
-  lastName String
-  password_hash String
-}
-
-model Client {
-  id Int @id @default(autoincrement())
-  name String
-  lastName String
-  email String
-  appointment Appointment[]
-}
-
-enum State{
+enum State {
   PENDIENTE
   CANCELADA
   HECHA
   NO_ASISTIO
 }
 
-model Appointment{
-  id Int @id @default(autoincrement())
-  day DateTime @default(now())
-  clientId Int
-  client Client @relation(fields: [clientId] , references: [id]) 
-  state State @default(PENDIENTE)
-  price Decimal @db.Decimal(10,2)
+model User {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  name         String
+  lastName     String
+  passwordHash String @map("password_hash")
+}
+
+model Client {
+  id           Int           @id @default(autoincrement())
+  name         String
+  lastName     String
+  email        String        @unique
+  appointments Appointment[]
 }
 
 model Service {
-  id Int @id @default(autoincrement())
-  name String
-  price Decimal @db.Decimal(10,2)
-  description String
-  isActive Boolean @default(true)
-  img String
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String
+  price           Decimal          @db.Decimal(10, 2)
+  img             String
+  isActive        Boolean          @default(true)
+  appointments    Appointment[]
+  packageServices PackageService[]
+}
+
+model Package {
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String
+  price           Decimal          @db.Decimal(10, 2)
+  img             String
+  isActive        Boolean          @default(true)
+  packageServices PackageService[]
+  appointments    Appointment[]
+}
+
+model PackageService {
+  packageId Int
+  serviceId Int
+  quantity  Int     @default(1)
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([packageId, serviceId])
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  day       DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  state     State    @default(PENDIENTE)
+
+  // snapshot de lo que se reservó
+  itemName  String
+  price     Decimal  @db.Decimal(10, 2)
+
+  clientId  Int
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  // exactamente uno de los dos debe tener valor (se refuerza con un CHECK)
+  serviceId Int?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  packageId Int?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: Restrict)
+}
+
+model BusinessHour {
+  id        Int      @id @default(autoincrement())
+  dayOfWeek Int      @unique // 0 = domingo ... 6 = sábado (igual que EXTRACT(DOW) en Postgres)
+  isOpen    Boolean  @default(true)
+  openTime  DateTime @db.Time(0)
+  closeTime DateTime @db.Time(0)
+}
+
+model ClosedDate {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @unique @db.Date
+  reason String?
 }
