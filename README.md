@@ -21,6 +21,7 @@ Next.js(App Router) , Typescript , Prisma , PostgreSQL(Supebase) , Tailwind
 ```
 - Services get deactivated instead of delete it. 
 - When u make and appointment it saves a snapshot of the name and the price.
-- The rule of "1 appointment per hour" made with a unique index.
+- Only one non-cancelled appointment is allowed at a given timestmap across the spa. Cancelling an appointment makes that timestamp available again
+
 
 ```

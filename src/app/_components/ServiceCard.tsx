@@ -17,7 +17,7 @@ export default function ServiceCard({ name, description, price, img , id}: Props
         <>
 
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-                <Image className="h-56 w-full object-cover" src={img} alt={name} width={640} height={400}/>
+                <Image className="h-56 w-full object-cover" src={img ?? null} alt={name} width={640} height={400}/>
                     <div className="flex flex-1 flex-col p-6 leading-normal">
                         <h5 className="mb-3 font-serif text-2xl tracking-tight text-stone-800">{name}</h5>
                         <p className="mb-5 text-sm leading-7 text-stone-600">{description}</p>
